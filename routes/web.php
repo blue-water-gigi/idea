@@ -6,7 +6,9 @@ use App\Http\Controllers\RegisteredUserController;
 use App\Http\Controllers\SessionsController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => view('welcome'));
+Route::redirect('/','/ideas');
+
+Route::get('/ideas',);
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisteredUserController::class, 'create']);
