@@ -9,8 +9,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/ideas');
 
-Route::get('/ideas', [IdeaController::class, 'index'])->middleware('auth');
-Route::get('/ideas/{idea}', [IdeaController::class, 'show'])->middleware('auth');
+Route::middleware('auth')->group(function () {
+    Route::get('/ideas', [IdeaController::class, 'index'])->name('idea.index');
+    Route::get('/ideas/{idea}', [IdeaController::class, 'show']);
+    Route::post('/ideas', [IdeaController::class, 'store'])->name('idea.store');
+    Route::delete('/ideas/{idea}', [IdeaController::class, 'destroy']);
+
+    Route::post('/logout', [SessionsController::class, 'destroy']);
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisteredUserController::class, 'create']);
@@ -20,5 +26,3 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [SessionsController::class, 'store']);
 
 });
-
-Route::post('/logout', [SessionsController::class, 'destroy'])->middleware('auth');
