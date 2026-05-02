@@ -30,6 +30,14 @@
             <div class="grid md:grid-cols-2 gap-6">
                 @forelse ($ideas as $idea)
                     <x-card href="ideas/{{ $idea->id }}">
+
+                        @if ($idea->image_path)
+                            <div class="mb-4 -mx-4 -mt-4 rounded-lg overflow-hidden">
+                                <img src="{{ asset('storage/' . $idea->image_path) }}" alt=""
+                                    class="w-full h-48 object-cover">
+                            </div>
+                        @endif
+
                         <h3 class='text-foreground text-lg'>{{ $idea->title }}</h3>
                         <div class="mt-2">
                             <x-idea.status-label status="{{ $idea->status }}">
@@ -49,7 +57,14 @@
 
         <!-- modal -->
         <x-modal name="create-idea" title="New idea">
-            <form x-data="{ status: 'pending', newLink: '', links: [] }" action="/ideas" method="POST">
+            <form x-data="{
+                status: 'pending',
+                newLink: '',
+                links: [],
+                newStep: '',
+                steps: []
+            }" action="{{ route('idea.store') }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
                 <div class="space-y-6">
                     <x-form.field autofocus label="Title" name="title" placeholder="Your idea title" required />
@@ -75,6 +90,42 @@
 
                     <x-form.field label="Description" name="description" type="textarea" placeholder="Describe it" />
 
+                    <div class="space-y-2">
+                        <label for="image" class="label">Featured image</label>
+                        <input type="file" name="image" accept="image/*">
+                        <x-form.error name="image" />
+                    </div>
+
+                    <div>
+                        <fieldset class="space-y-3">
+                            <legend class="label">
+                                Actionable steps
+                            </legend>
+
+                            <template x-for="(step, index) in steps" :key="step">
+                                <div class="flex gap-x-2 items-center">
+                                    <input type="text" name="steps[]" class="input" x-model="step">
+
+                                    <button type="button" @click="steps.splice(index, 1)" class="form-muted-icon">
+                                        <x-icons.delete />
+                                    </button>
+
+                                </div>
+                            </template>
+
+                            <div class="flex gap-x-2 items-center">
+                                <input x-model="newStep" type="url" id="new-step" data-test="new-step"
+                                    placeholder="What needs to be done?" class="input flex-1" spellcheck="false">
+                                <button :disabled="newStep.trim() === 0" type="button"
+                                    @click="steps.push(newStep.trim()); newStep=''" class="form-muted-icon"
+                                    data-test="submit-new-step-button">
+                                    <x-icons.add />
+                                </button>
+                            </div>
+
+                        </fieldset>
+                    </div>
+
                     <div>
                         <fieldset class="space-y-3">
                             <legend class="label">
@@ -85,10 +136,7 @@
                                 <div class="flex gap-x-2 items-center">
                                     <input type="url" name="links[]" class="input" x-model="link">
 
-                                    <button type="button"
-                                        @click="links.splice(index, 1)"
-                                        class="form-muted-icon"
-                                    >
+                                    <button type="button" @click="links.splice(index, 1)" class="form-muted-icon">
                                         <x-icons.delete />
                                     </button>
 
@@ -96,13 +144,12 @@
                             </template>
 
                             <div class="flex gap-x-2 items-center">
-                                <input x-model="newLink" type="url" id="new-link" data-test="new-link" placeholder="http://example.com"
-                                    autocomplete="url" class="input flex-1" spellcheck="false">
+                                <input x-model="newLink" type="url" id="new-link" data-test="new-link"
+                                    placeholder="http://example.com" autocomplete="url" class="input flex-1"
+                                    spellcheck="false">
                                 <button :disabled="newLink.trim() === 0" type="button"
-                                    @click="links.push(newLink.trim()); newLink=''"
-                                    class="form-muted-icon"
-                                    data-test="submit-new-link-button"
-                                    >
+                                    @click="links.push(newLink.trim()); newLink=''" class="form-muted-icon"
+                                    data-test="submit-new-link-button">
                                     <x-icons.add />
                                 </button>
                             </div>

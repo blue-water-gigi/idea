@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actions;
+
+use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Support\Facades\DB;
+
+class CreateIdea
+{
+    /**
+     * Create a new class instance.
+     */
+    public function __construct(#[CurrentUser] protected User $user)
+    {
+        //
+    }
+
+    /**
+     * Handle the creating of user's idea
+     */
+    public function handle(array $attributes): void
+    {
+        $data = collect($attributes)->only([
+            'title', 'description', 'status', 'links',
+        ])->toArray();
+
+        if ($attributes['image'] ?? false) {
+            $data['image_path'] = $attributes['image']->store('ideas', 'public');
+        }
+
+        DB::transaction(function () use ($data) {
+            $idea = $this->user->ideas()->create($data);
+
+            $idea->steps()->createMany(
+                collect($attributes['steps'] ?? [])->map(fn ($step) => ['description' => $step])
+            );
+        });
+    }
+}

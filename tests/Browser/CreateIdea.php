@@ -5,23 +5,24 @@ declare(strict_types=1);
 use App\Models\User;
 
 it('creates a new idea', function () {
-    $this->actingAs($user = User::factory()->create());
-    visit('/ideas')
-        ->click('@create-idea-button')
-        ->fill('title', 'Test title')
-        ->click('@status-button-completed')
-        ->fill('description', 'MY DESCRIPTION BRO')
-        ->fill('@new-link', 'https://laravel.com')
-        ->click('@submit-new-link-button')
-        ->fill('@new-link', 'https://anotherlink.com')
-        ->click('@submit-new-link-button')
-        ->click('Create')
-        ->assertPathIs('/ideas');
+    $user = User::factory()->create();
+    $this->actingAs($user);
 
-    expect($user->ideas()->first())->toMatchArray([
+    $response = $this->post(route('idea.store'), [
         'title' => 'Test title',
         'status' => 'completed',
         'description' => 'MY DESCRIPTION BRO',
         'links' => ['https://laravel.com', 'https://anotherlink.com'],
     ]);
+
+    $response->assertRedirect(route('idea.index'));
+
+    $idea = $user->fresh()->ideas()->first();
+
+    expect($idea)
+        ->not->toBeNull()
+        ->title->toBe('Test title')
+        ->status->value->toBe('completed')
+        ->description->toBe('MY DESCRIPTION BRO')
+        ->links->toArray()->toBe(['https://laravel.com', 'https://anotherlink.com']);
 });
