@@ -22,7 +22,7 @@ it('creates a new idea', function () {
         ->click('@upd-or-crt-button')
         ->assertPathIs('/ideas');
 
-    expect($idea = $user->ideas()->first())->toMatchArray([
+    expect($user->fresh()->ideas()->first())->toMatchArray([
         'title' => 'Test title',
         'status' => 'completed',
         'description' => 'MY DESCRIPTION BRO',

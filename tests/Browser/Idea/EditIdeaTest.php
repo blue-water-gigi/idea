@@ -10,11 +10,11 @@ it('shows the initial input state', function () {
 
     $idea = Idea::factory()->for($user)->create();
 
-    visit(route('idea.show',$idea))
+    visit(route('idea.show', $idea))
         ->click('@edit-idea-button')
-        ->assertValue('title',$idea->title)
-        ->assertValue('description',$idea->description)
-        ->assertValue('status',$idea->status->value);
+        ->assertValue('title', $idea->title)
+        ->assertValue('description', $idea->description)
+        ->assertValue('status', $idea->status->value);
 });
 
 it('edits an existing idea', function () {
@@ -36,9 +36,7 @@ it('edits an existing idea', function () {
         ->click('@upd-or-crt-button')
         ->assertPathIs(route('idea.show', $idea, false));
 
-        $idea->refresh();
-
-        expect($idea)->toMatchArray([
+    expect($idea->fresh())->toMatchArray([
         'title' => 'Updated title',
         'status' => 'completed',
         'description' => 'MY DESCRIPTION BRO',
